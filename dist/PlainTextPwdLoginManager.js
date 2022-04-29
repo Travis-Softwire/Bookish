@@ -8,28 +8,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const Book_1 = __importDefault(require("./Book"));
-class postgresBookFetcher {
-    constructor(dbCon) {
-        this.db = dbCon.getDB();
+const pgp = require('pg-promise')();
+const { ParameterizedQuery: PQ } = require('pg-promise');
+class PlainTextPwdLoginManager {
+    constructor(connectionString) {
+        this.db = pgp(connectionString);
     }
-    fetchBookData() {
+    tryLogin(username, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            let books = [];
+            const pwdQuery = new PQ({ text: 'SELECT ("Password") FROM bookish."Users" WHERE "Username" = $1', values: [username] });
             try {
-                const bookData = yield this.db.any('SELECT * FROM bookish."Books"');
-                books = bookData.map((data) => Book_1.default.CreateFromBookData(data));
+                const foundPwd = yield this.db.one(pwdQuery);
+                console.log(`Sent username: ${username} & password: ${password}, received response: ${JSON.stringify(foundPwd)}`);
+                return password === foundPwd;
             }
             catch (err) {
                 console.log(err.message);
+                return false;
             }
-            return books;
         });
     }
 }
-exports.default = postgresBookFetcher;
-//# sourceMappingURL=postgresBookFetcher.js.map
+exports.default = PlainTextPwdLoginManager;
+//# sourceMappingURL=PlainTextPwdLoginManager.js.map

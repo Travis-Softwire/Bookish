@@ -1,13 +1,13 @@
 import dbBookfetcher from "./dbBookFetcher";
 import Book from "./Book";
 import BookData from "./BookData";
-const pgp = require('pg-promise')();
+import dbConnection from "./dbConnection";
 
 export default class postgresBookFetcher implements dbBookfetcher {
     private readonly db;
 
-    constructor(connectionString: string) {
-        this.db = pgp(connectionString);
+    constructor(dbCon: dbConnection) {
+        this.db = dbCon.getDB();
     }
 
     async fetchBookData(): Promise<Book[]> {

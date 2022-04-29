@@ -1,0 +1,1 @@
+{"version":3,"file":"postgreDBConnection.js","sourceRoot":"","sources":["../postgreDBConnection.ts"],"names":[],"mappings":";;AAEA,MAAM,GAAG,GAAG,OAAO,CAAC,YAAY,CAAC,EAAE,CAAC;AAGpC,MAAqB,mBAAmB;IAGpC,YAAY,gBAAwB;QAChC,IAAI,CAAC,EAAE,GAAG,GAAG,CAAC,gBAAgB,CAAC,CAAC;IACpC,CAAC;IAED,KAAK;QACD,OAAO,IAAI,CAAC,EAAE,CAAC;IACnB,CAAC;CACJ;AAVD,sCAUC"}
