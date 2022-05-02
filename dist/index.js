@@ -15,47 +15,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const postgresBookFetcher_1 = __importDefault(require("./postgresBookFetcher"));
 const PlainTextPostgresPwdLoginManager_1 = __importDefault(require("./PlainTextPostgresPwdLoginManager"));
 const postgreDBConnection_1 = __importDefault(require("./postgreDBConnection"));
+const PassportManager_1 = __importDefault(require("./PassportManager"));
+const PassportStrategyType_1 = __importDefault(require("./PassportStrategyType"));
 const express = require('express');
+const jwt = require('jsonwebtoken');
+const passport = require('passport');
 const app = express();
 const port = 3000;
 const connectionString = 'postgresql://bookish:bookish@localhost:5432';
 const dbConnection = new postgreDBConnection_1.default(connectionString);
-const jwt = require('jsonwebtoken');
-const passport = require('passport');
-const JwtStrategy = require('passport-jwt').Strategy;
-const localStrategy = require('passport-local').Strategy;
-passport.use('login', new localStrategy({
-    usernameField: 'username',
-    passwordField: 'password'
-}, (username, password, done) => __awaiter(void 0, void 0, void 0, function* () {
-    const loginManager = new PlainTextPostgresPwdLoginManager_1.default(dbConnection);
-    const loggedIn = yield loginManager.tryLogin(username, password);
-    if (loggedIn) {
-        done(null, { user: username }, { message: 'Logged in' });
-    }
-    else {
-        done(null, false, { message: 'Invalid username or password.' });
-    }
-})));
-const ExtractJwt = require('passport-jwt').ExtractJwt;
-const opts = {};
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = 'Bookish123';
-passport.use('jwt', new JwtStrategy(opts, (token, done) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const user = token.user;
-        return done(null, user);
-    }
-    catch (error) {
-        done(error);
-    }
-})));
-app.get('/Login', passport.authenticate('login', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const loginManager = new PlainTextPostgresPwdLoginManager_1.default(dbConnection);
+const passportManager = new PassportManager_1.default(passport, loginManager, 'Bookish123');
+passportManager.configurePassportWithStrategy(PassportStrategyType_1.default.USER_PWD);
+passportManager.configurePassportWithStrategy(PassportStrategyType_1.default.JWT);
+app.get('/Login', passport.authenticate(PassportStrategyType_1.default.USER_PWD, { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userName = req.query.username;
     const token = jwt.sign({ user: userName }, 'Bookish123');
     res.send(token);
 }));
-app.get('/books', passport.authenticate('jwt', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/books', passport.authenticate(PassportStrategyType_1.default.JWT, { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const fetcher = new postgresBookFetcher_1.default(dbConnection);
     const books = yield fetcher.fetchBookData();
     console.log(books);
