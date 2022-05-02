@@ -13,11 +13,17 @@ export default class PlainTextPostgresPwdLoginManager implements LoginManager {
     async tryLogin(username: string, password: string): Promise<boolean> {
         const pwdQuery = new PQ({text: 'SELECT ("Password") FROM bookish."Users" WHERE "Username" = $1', values: [username]});
         try {
-            const foundPwdData: PasswordData = await this.db.one(pwdQuery);
-            return password === foundPwdData.Password;
+            const foundPassword = await this.retrieveSecret(username);
+            return !!foundPassword && foundPassword === password;
         } catch (err: any) {
             console.log(err.message);
             return false;
         }
+    }
+
+    async retrieveSecret(username: string): Promise<string> {
+        const pwdQuery = new PQ({text: 'SELECT ("Password") FROM bookish."Users" WHERE "Username" = $1', values: [username]});
+        const foundPwdData: PasswordData = await this.db.one(pwdQuery);
+        return foundPwdData.Password;
     }
 }

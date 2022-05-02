@@ -18,13 +18,20 @@ class PlainTextPostgresPwdLoginManager {
         return __awaiter(this, void 0, void 0, function* () {
             const pwdQuery = new PQ({ text: 'SELECT ("Password") FROM bookish."Users" WHERE "Username" = $1', values: [username] });
             try {
-                const foundPwdData = yield this.db.one(pwdQuery);
-                return password === foundPwdData.Password;
+                const foundPassword = yield this.retrieveSecret(username);
+                return !!foundPassword && foundPassword === password;
             }
             catch (err) {
                 console.log(err.message);
                 return false;
             }
+        });
+    }
+    retrieveSecret(username) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const pwdQuery = new PQ({ text: 'SELECT ("Password") FROM bookish."Users" WHERE "Username" = $1', values: [username] });
+            const foundPwdData = yield this.db.one(pwdQuery);
+            return foundPwdData.Password;
         });
     }
 }
